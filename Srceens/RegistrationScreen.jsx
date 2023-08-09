@@ -18,7 +18,7 @@ const RegistrationScreen = () => {
       resizeMode="stretch"
       style={styles.bcgImage}
     >
-      <KeyboardAvoidingView behavior="padding" style={{flexGrow:0.74, paddingBottom: 10}}>
+      <KeyboardAvoidingView behavior="padding" style={{flexGrow:0.78, paddingBottom: 10}}>
         <View style={styles.contentWrapper}>
           <View style={styles.avatar}>
             <AntDesign

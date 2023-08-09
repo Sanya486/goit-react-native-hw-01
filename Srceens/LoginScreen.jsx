@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   ImageBackground,
@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
 
 const LoginScreen = () => {
   return (
@@ -18,7 +17,7 @@ const LoginScreen = () => {
       resizeMode="stretch"
       style={styles.bcgImage}
     >
-      <KeyboardAvoidingView behavior="padding" style={{flexGrow: 0.48}}>
+      <KeyboardAvoidingView behavior="padding" style={{ flexGrow: 0.48}}>
         <View style={styles.contentWrapper}>
           <Text style={styles.title}>Увійти</Text>
           <View style={{ display: "flex", gap: 16, marginTop: 32 }}>
@@ -52,10 +51,10 @@ const styles = StyleSheet.create({
   bcgImage: {
     height: "100%",
     width: "100%",
-        justifyContent: "flex-end",
+    justifyContent: "flex-end",
   },
-    contentWrapper: {
-      flex:1,
+  contentWrapper: {
+    flex: 1,
     paddingLeft: 16,
       paddingRight: 16,
     backgroundColor: "white",
@@ -72,7 +71,7 @@ const styles = StyleSheet.create({
   input: {
     padding: 16,
     borderColor: "#E8E8E8",
-      backgroundColor: "#f6f6f6",
+    backgroundColor: "#f6f6f6",
     borderRadius: 10,
     color: "#1B4371",
     height: 50,
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
     lineHeight: 18.75,
   },
   accExistText: {
-    marginTop: 16,
+      marginTop: 16,
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     lineHeight: 18.75,
