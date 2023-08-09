@@ -2,7 +2,6 @@ import React from "react";
 import {
   StyleSheet,
   ImageBackground,
-  Image,
   View,
   Text,
   TextInput,
@@ -19,7 +18,7 @@ const RegistrationScreen = () => {
       resizeMode="stretch"
       style={styles.bcgImage}
     >
-      <KeyboardAvoidingView behavior="position" style={{height: '67%'}}>
+      <KeyboardAvoidingView behavior="padding" style={{flexGrow:0.74, paddingBottom: 10}}>
         <View style={styles.contentWrapper}>
           <View style={styles.avatar}>
             <AntDesign
@@ -57,6 +56,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   contentWrapper: {
+    flex: 1,
     paddingLeft: 16,
     paddingRight: 16,
     height: "100%",
