@@ -8,42 +8,89 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
 } from "react-native";
+import { Formik } from "formik";
+import * as Yup from "yup";
+
 
 const LoginScreen = () => {
   return (
-    <ImageBackground
-      source={require("../images/bcgPhoto.png")}
-      resizeMode="stretch"
-      style={styles.bcgImage}
-    >
-      <KeyboardAvoidingView behavior="padding" style={{ flexGrow: 0.48}}>
-        <View style={styles.contentWrapper}>
-          <Text style={styles.title}>Увійти</Text>
-          <View style={{ display: "flex", gap: 16, marginTop: 32 }}>
-            <TextInput
-              placeholder="Адреса електронної пошти"
-              style={styles.input}
-            />
-            <TextInput
-              textContentType="password"
-              secureTextEntry
-              placeholder="Пароль"
-              style={styles.input}
-            />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ImageBackground
+        source={require("../images/bcgPhoto.png")}
+        resizeMode="stretch"
+        style={styles.bcgImage}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flexGrow: 0.48 }}
+        >
+          <View style={styles.contentWrapper}>
+            <Text style={styles.title}>Увійти</Text>
+            <Formik
+              initialValues={{ email: "", password: "" }}
+              onSubmit={(values) => console.log(values)}
+              validationSchema={Yup.object({
+                email: Yup.string()
+                  .email("Invalid email address")
+                  .required("Required"),
+                password: Yup.string().required("Required"),
+              })}
+            >
+              {({
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                values,
+                errors,
+                touched,
+              }) => (
+                <View style={{ gap: 16, marginTop: 32 }}>
+                  <TextInput
+                    placeholder="Адреса електронної пошти"
+                    style={styles.input}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
+                    value={values.email}
+                  />
+                  {errors.email && touched.email && (
+                    <Text
+                      style={{
+                        color: "red",
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                      }}
+                    >
+                      {errors.email}
+                    </Text>
+                  )}
+                  <TextInput
+                    textContentType="password"
+                    secureTextEntry
+                    placeholder="Пароль"
+                    style={styles.input}
+                    onChangeText={handleChange("password")}
+                    onBlur={handleBlur("password")}
+                    value={values.password}
+                  />
+                  <TouchableOpacity style={styles.btn} onPress={handleSubmit}>
+                    <Text style={styles.btnText}>Увійти</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </Formik>
+            <TouchableWithoutFeedback>
+              <Text style={styles.accExistText}>
+                {" "}
+                Немає акаунту? Зареєструватися
+              </Text>
+            </TouchableWithoutFeedback>
           </View>
-          <TouchableOpacity style={styles.btn}>
-            <Text style={styles.btnText}>Увійти</Text>
-          </TouchableOpacity>
-          <TouchableWithoutFeedback>
-            <Text style={styles.accExistText}>
-              {" "}
-              Немає акаунту? Зареєструватися
-            </Text>
-          </TouchableWithoutFeedback>
-        </View>
-      </KeyboardAvoidingView>
-    </ImageBackground>
+        </KeyboardAvoidingView>
+      </ImageBackground>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -83,7 +130,7 @@ const styles = StyleSheet.create({
     height: 51,
     backgroundColor: "#ff6c00",
     borderRadius: 100,
-    marginTop: 43,
+    marginTop: 27,
 
     flexDirection: "row",
     justifyContent: "center",

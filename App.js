@@ -13,8 +13,8 @@ export default function App() {
      return null;
    }
   return (
-    <RegistrationScreen></RegistrationScreen>
-    // <LoginScreen></LoginScreen>
+    // <RegistrationScreen></RegistrationScreen>
+    <LoginScreen></LoginScreen>
   );
 }
 
