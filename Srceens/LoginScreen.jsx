@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   ImageBackground,
@@ -13,9 +13,13 @@ import {
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { useNavigation } from "@react-navigation/native";
+
 
 
 const LoginScreen = () => {
+      const navigation = useNavigation();
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground
@@ -31,7 +35,10 @@ const LoginScreen = () => {
             <Text style={styles.title}>Увійти</Text>
             <Formik
               initialValues={{ email: "", password: "" }}
-              onSubmit={(values) => console.log(values)}
+              onSubmit={(values) => {
+                console.log(values)
+                navigation.navigate("Home")
+              }}
               validationSchema={Yup.object({
                 email: Yup.string()
                   .email("Invalid email address")
@@ -81,9 +88,10 @@ const LoginScreen = () => {
                 </View>
               )}
             </Formik>
-            <TouchableWithoutFeedback>
+            <TouchableWithoutFeedback
+              onPress={() => navigation.navigate("Registration")}
+            >
               <Text style={styles.accExistText}>
-                {" "}
                 Немає акаунту? Зареєструватися
               </Text>
             </TouchableWithoutFeedback>

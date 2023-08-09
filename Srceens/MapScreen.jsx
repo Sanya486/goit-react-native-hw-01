@@ -2,12 +2,12 @@ import React from 'react'
 import { View, Text } from "react-native";
 
 
-const PostsScreen = () => {
+const MapScreen = () => {
   return (
     <View>
-      <Text>PostsScreen</Text>
+      <Text>MapScreen</Text>
     </View>
   );
 }
 
-export default PostsScreen
+export default MapScreen

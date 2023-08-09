@@ -13,9 +13,13 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Formik } from "formik";
- import * as Yup from "yup";
+import * as Yup from "yup";
+import { useNavigation } from "@react-navigation/native";
+
 
 const RegistrationScreen = () => {
+      const navigation = useNavigation();
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground
@@ -39,7 +43,10 @@ const RegistrationScreen = () => {
             <Text style={styles.title}>Реєстрація</Text>
             <Formik
               initialValues={{ login: "", email: "", password: "" }}
-              onSubmit={(values) => console.log(values)}
+              onSubmit={(values) => {
+                console.log(values)
+                navigation.navigate("Home")
+              }}
               validationSchema={Yup.object({
                 login: Yup.string()
                   .required("Required"),
@@ -50,7 +57,14 @@ const RegistrationScreen = () => {
                   .required("Required"),
               })}
             >
-              {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+              {({
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                values,
+                errors,
+                touched,
+              }) => (
                 <View style={{ display: "flex", gap: 16, marginTop: 32 }}>
                   <TextInput
                     placeholder="Логін"
@@ -66,7 +80,17 @@ const RegistrationScreen = () => {
                     onBlur={handleBlur("email")}
                     value={values.email}
                   />
-                 { errors.email && touched.email && <Text style={{color: 'red', paddingLeft:16, paddingRight:16}}>{ errors.email}</Text>}
+                  {errors.email && touched.email && 
+                    <Text
+                      style={{
+                        color: "red",
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                      }}
+                    >
+                      {errors.email}
+                    </Text>
+                  }
                   <TextInput
                     textContentType="password"
                     secureTextEntry
@@ -82,7 +106,9 @@ const RegistrationScreen = () => {
                 </View>
               )}
             </Formik>
-            <TouchableWithoutFeedback>
+            <TouchableWithoutFeedback
+              onPress={() => navigation.navigate("Login")}
+            >
               <Text style={styles.accExistText}> Вже є аккаунт? Увійти</Text>
             </TouchableWithoutFeedback>
           </View>
