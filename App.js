@@ -6,6 +6,7 @@ import RegistrationScreen from "./Srceens/RegistrationScreen";
 import { useFonts } from "expo-font";
 import LoginScreen from "./Srceens/LoginScreen";
 import Home from "./Srceens/Home";
+import CommentsScreen from "./Srceens/CommentsScreen";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -37,6 +38,12 @@ export default function App() {
           component={Home}
           options={{ headerShown: false }}
         />
+        <MainStack.Screen
+          name="Comments"
+          component={CommentsScreen}
+          options={{ }}
+        />
+
       </MainStack.Navigator>
     </NavigationContainer>
   );

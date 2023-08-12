@@ -1,6 +1,4 @@
-import React, {useState, useEffect} from 'react'
-
-
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,26 +10,26 @@ import {
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
 import { MaterialIcons, EvilIcons } from "@expo/vector-icons";
 
-
-
-const CreatePostsScreen = () => {
+const CreatePostsScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [photo, setPhoto] = useState(null);
-  const [nameInput, setNameInput] = useState();
-  const [locationInput, setLocationInput] = useState();
+  const [location, setLocation] = useState(null);
+  const [nameInput, setNameInput] = useState('');
+  const [locationInput, setLocationInput] = useState('');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  console.log(photo)
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       await MediaLibrary.requestPermissionsAsync();
       await ImagePicker.requestMediaLibraryPermissionsAsync();
-
+      await Location.requestForegroundPermissionsAsync();
+      
       setHasPermission(status === "granted");
     })();
   }, []);
@@ -40,7 +38,7 @@ const CreatePostsScreen = () => {
     return <View />;
   }
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return <Text>No access to camera or location</Text>;
   }
 
   const pickImage = async () => {
@@ -51,16 +49,27 @@ const CreatePostsScreen = () => {
       quality: 1,
     });
 
-   
-
     if (!result.canceled) {
+      console.log(result)
       setPhoto(result.assets[0].uri);
+      const data = await MediaLibrary.getAssetInfoAsync(
+        result.assets[0].assetId);
+      setLocation(data.location)
     }
   };
 
-  const handlesubmit = () => {
-    
-  }
+  const handlesubmit = async () => {
+    try {
+      const postData = { nameInput, locationInput, photo, location };
+      setPhoto(null),
+        setLocation(null),
+        setNameInput(''),
+        setLocationInput(''),
+      navigation.jumpTo("Публікації", postData);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
 
   return (
     <>
@@ -89,6 +98,10 @@ const CreatePostsScreen = () => {
                 onPress={async () => {
                   if (cameraRef) {
                     const { uri } = await cameraRef.takePictureAsync();
+                    const asset = await MediaLibrary.createAssetAsync(uri);
+                    Location.getCurrentPositionAsync({}).then((result) => {
+                        setLocation(result.coords);
+                    });
                     setPhoto(uri);
                     setIsCameraOpen(false);
                   }
@@ -140,21 +153,23 @@ const CreatePostsScreen = () => {
             </TouchableOpacity>
           )}
           <TouchableOpacity style={{ marginTop: 8 }} onPress={pickImage}>
-            <Text style={styles.photoAction}>Завантажте фото</Text>
+            <Text style={styles.photoAction}>Завантажити фото з Галереї</Text>
           </TouchableOpacity>
           <View style={{ gap: 16 }}>
             <TextInput
               style={styles.input}
               clearButtonMode="while-editing"
               placeholder="Назва..."
-              onChangeText={(text) => setNameInput(text)}
+                onChangeText={(text) => setNameInput(text)}
+                value={nameInput}
             />
             <View>
               <TextInput
                 style={styles.input}
                 clearButtonMode="while-editing"
                 placeholder="Місцевість..."
-                onChangeText={(text) => setLocationInput(text)}
+                  onChangeText={(text) => setLocationInput(text)}
+                  value={locationInput}
               />
               <EvilIcons
                 style={{ position: "absolute", bottom: 20, left: 0 }}
@@ -171,11 +186,11 @@ const CreatePostsScreen = () => {
       )}
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: { paddingLeft: 16, paddingRight: 16, paddingTop: 32 },
-  cameraContainer: {flex:1},
+  cameraContainer: { flex: 1 },
   camera: { flex: 1 },
   photoView: {
     flex: 1,
@@ -210,7 +225,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   pictureBackdrop: {
-
     borderRadius: 8,
     height: 240,
     backgroundColor: "#E8E8E8",
@@ -261,5 +275,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
-export default CreatePostsScreen
+export default CreatePostsScreen;

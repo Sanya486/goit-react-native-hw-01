@@ -15,7 +15,12 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sanya486.my-react-app",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDD6a0nMZfRLGu9ObiZxMMXgjaWDcEH6Ok"
+      }
+
     },
     "android": {
       "adaptiveIcon": {
