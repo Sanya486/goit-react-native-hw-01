@@ -106,7 +106,7 @@ const PostsScreen = ({ route, navigation }) => {
                   >
                     <TouchableOpacity
                       style={{ flexDirection: "row" }}
-                      onPress={() => navigation.navigate("Comments")}
+                      onPress={() => navigation.navigate("Comments", item)}
                     >
                       <EvilIcons name="comment" size={24} color="black" />
                       <Text style={{ fontSize: 16 }}>0</Text>

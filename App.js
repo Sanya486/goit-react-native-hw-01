@@ -41,7 +41,7 @@ export default function App() {
         <MainStack.Screen
           name="Comments"
           component={CommentsScreen}
-          options={{ }}
+          options={{title: 'Коментарі' }}
         />
 
       </MainStack.Navigator>
