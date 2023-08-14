@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,35 +7,37 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
-  Button
+  Button,
+  SafeAreaView,
 } from "react-native";
 import { EvilIcons } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
-
 
 const PostsScreen = ({ route, navigation }) => {
   const tabBarHeight = useBottomTabBarHeight();
   const [posts, setPosts] = useState([]);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [marker, setMarker] = useState(null);
-  let postData = route.params
-  console.log(postData)
+  let postData = route.params;
+  console.log(postData);
   useEffect(() => {
-    if( postData !== undefined){
+    if (postData !== undefined) {
       setPosts([...posts, postData]);
-      postData = undefined
+      postData = undefined;
     }
   }, [postData]);
 
   const OnLocation = (location, name) => {
-    console.log('MArker location', location)
-    setIsMapOpen(true)
-    setMarker({location, name})
-  }
+    console.log("MArker location", location);
+    setIsMapOpen(true);
+    setMarker({ location, name });
+  };
+
+
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       {isMapOpen && marker.location !== null && (
         <View style={styles.containerMap}>
           <MapView
@@ -72,7 +74,8 @@ const PostsScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       )}
-      <View style={[styles.container, { paddingBottom: tabBarHeight + 10 }]}>
+
+      <View style={[styles.container, { marginBottom: tabBarHeight + 10 }]}>
         <View style={styles.userTextWrapper}>
           <Image source={require("../images/User.png")} />
           <View>
@@ -85,53 +88,64 @@ const PostsScreen = ({ route, navigation }) => {
         <View>
           {posts.length !== 0 && (
             <FlatList
-              ItemSeparatorComponent={
-                <View style={{ width: "100%", height: 32 }} />
-              }
               data={posts}
-              renderItem={({ item }) => (
-                <View style={{ gap: 8 }}>
-                  <Image
-                    style={{ height: 240, width: "100%", borderRadius: 10 }}
-                    source={{ uri: item.photo }}
-                  />
-                  <Text style={{ fontFamily: "Roboto-Medium", fontSize: 16 }}>
-                    {item.nameInput}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <TouchableOpacity
-                      style={{ flexDirection: "row" }}
-                      onPress={() => navigation.navigate("Comments", item)}
+              renderItem={({ item }) => {
+                let locationText;
+
+                if (!item.locationInput && !item.location) {
+                  locationText = (
+                    <Text style={{ fontSize: 16 }}>Локація відсутня</Text>
+                  );
+                } else if (item.location && !item.locationInput) {
+                  locationText = <Text style={{ fontSize: 16 }}>Локація</Text>;
+                } else {
+                  locationText = (
+                    <Text style={{ fontSize: 16 }}>{item.locationInput}</Text>
+                  );
+                }
+                return (
+                  <View style={{ gap: 8, paddingBottom: 32 }}>
+                    <Image
+                      style={{ height: 240, width: "100%", borderRadius: 10 }}
+                      source={{ uri: item.photo }}
+                    />
+                    <Text style={{ fontFamily: "Roboto-Medium", fontSize: 16 }}>
+                      {item.nameInput}
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
                     >
-                      <EvilIcons name="comment" size={24} color="black" />
-                      <Text style={{ fontSize: 16 }}>0</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{ flexDirection: "row" }}
-                      onPress={() => OnLocation(item.location, item.nameInput)}
-                    >
-                      <EvilIcons name="location" size={24} color="black" />
-                      <Text style={{ fontSize: 16 }}>
-                        {item.locationInput || <Text>Локація</Text>}
-                      </Text>
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{ flexDirection: "row" }}
+                        onPress={() => navigation.navigate("Comments", item)}
+                      >
+                        <EvilIcons name="comment" size={24} color="black" />
+                        <Text style={{ fontSize: 16 }}>0</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{ flexDirection: "row" }}
+                        onPress={() =>
+                          OnLocation(item.location, item.nameInput)
+                        }
+                      >
+                        <EvilIcons name="location" size={24} color="black" />
+                        {locationText}
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              )}
+                );
+              }}
               keyExtractor={(post) => post.nameInput}
             />
           )}
         </View>
       </View>
-    </>
+    </SafeAreaView>
   );
-
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -152,7 +166,7 @@ const styles = StyleSheet.create({
     lineHeight: 15.23,
   },
   containerMap: {
-    position: 'absolute',
+    position: "absolute",
     zIndex: 100,
     flex: 1,
     backgroundColor: "#fff",
@@ -165,4 +179,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PostsScreen
+export default PostsScreen;

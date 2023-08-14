@@ -6,12 +6,14 @@ import {
   StyleSheet,
   TextInput,
   ImageBackground,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
-import { MaterialIcons, EvilIcons } from "@expo/vector-icons";
+import { MaterialIcons, EvilIcons, Ionicons } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
 
 const CreatePostsScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
@@ -19,8 +21,8 @@ const CreatePostsScreen = ({ navigation }) => {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [photo, setPhoto] = useState(null);
   const [location, setLocation] = useState(null);
-  const [nameInput, setNameInput] = useState('');
-  const [locationInput, setLocationInput] = useState('');
+  const [nameInput, setNameInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ const CreatePostsScreen = ({ navigation }) => {
       await MediaLibrary.requestPermissionsAsync();
       await ImagePicker.requestMediaLibraryPermissionsAsync();
       await Location.requestForegroundPermissionsAsync();
-      
+
       setHasPermission(status === "granted");
     })();
   }, []);
@@ -50,25 +52,30 @@ const CreatePostsScreen = ({ navigation }) => {
     });
 
     if (!result.canceled) {
-      console.log(result)
+      console.log(result);
       setPhoto(result.assets[0].uri);
       const data = await MediaLibrary.getAssetInfoAsync(
-        result.assets[0].assetId);
-      setLocation(data.location)
+        result.assets[0].assetId
+      );
+      setLocation(data.location);
     }
   };
 
-  const handlesubmit = async () => {
-    try {
-      const postData = { nameInput, locationInput, photo, location };
-      setPhoto(null),
-        setLocation(null),
-        setNameInput(''),
-        setLocationInput(''),
-      navigation.jumpTo("Публікації", postData);
-    } catch (error) {
-      console.error(error.message);
+  const handlesubmit = () => {
+    if (!photo) {
+      Toast.show({
+        type: "error",
+        text1: "Ой лишенько...",
+        text2: "Оберіть будь ласка світлину!",
+      });
+      return;
     }
+    const postData = { nameInput, locationInput, photo, location };
+    setPhoto(null),
+      setLocation(null),
+      setNameInput(""),
+      setLocationInput(""),
+      navigation.jumpTo("Публікації", postData);
   };
 
   return (
@@ -87,11 +94,7 @@ const CreatePostsScreen = ({ navigation }) => {
                   );
                 }}
               >
-                <Text
-                  style={{ fontSize: 18, marginBottom: 10, color: "white" }}
-                >
-                  Flip
-                </Text>
+                <Ionicons name="camera-reverse-sharp" size={35} color="white" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.button}
@@ -99,8 +102,9 @@ const CreatePostsScreen = ({ navigation }) => {
                   if (cameraRef) {
                     const { uri } = await cameraRef.takePictureAsync();
                     const asset = await MediaLibrary.createAssetAsync(uri);
+                    setLocation(null);
                     Location.getCurrentPositionAsync({}).then((result) => {
-                        setLocation(result.coords);
+                      setLocation(result.coords);
                     });
                     setPhoto(uri);
                     setIsCameraOpen(false);
@@ -111,85 +115,109 @@ const CreatePostsScreen = ({ navigation }) => {
                   <View style={styles.takePhotoInner}></View>
                 </View>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cameraCloseBtn}
+                onPress={() => setIsCameraOpen(false)}
+              >
+                <Ionicons
+                  name="ios-close-circle-sharp"
+                  size={35}
+                  color="white"
+                />
+              </TouchableOpacity>
             </View>
           </Camera>
         </View>
       ) : (
-        <View style={styles.container}>
-          {photo ? (
-            <ImageBackground source={{ uri: photo }} resizeMode="cover">
+        <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+          <View style={styles.container}>
+            {photo ? (
+              <ImageBackground
+                source={{ uri: photo }}
+                resizeMode="cover"
+                style={{ flex: 1 }}
+              >
+                <TouchableOpacity
+                  style={[styles.pictureBackdrop, { backgroundColor: "none" }]}
+                  onPress={() => setIsCameraOpen(true)}
+                >
+                  <View
+                    style={[
+                      styles.photoIconWrapper,
+                      { backgroundColor: "rgba(240, 240, 240, 0.3)" },
+                    ]}
+                  >
+                    <MaterialIcons
+                      style={styles.photoIcon}
+                      name="photo-camera"
+                      size={24}
+                      color="white"
+                    />
+                  </View>
+                </TouchableOpacity>
+              </ImageBackground>
+            ) : (
               <TouchableOpacity
-                style={[styles.pictureBackdrop, { backgroundColor: "none" }]}
+                style={styles.pictureBackdrop}
                 onPress={() => setIsCameraOpen(true)}
               >
-                <View
-                  style={[
-                    styles.photoIconWrapper,
-                    { backgroundColor: "rgba(240, 240, 240, 0.3)" },
-                  ]}
-                >
+                <View style={styles.photoIconWrapper}>
                   <MaterialIcons
                     style={styles.photoIcon}
                     name="photo-camera"
                     size={24}
-                    color="white"
+                    color="grey"
                   />
                 </View>
               </TouchableOpacity>
-            </ImageBackground>
-          ) : (
-            <TouchableOpacity
-              style={styles.pictureBackdrop}
-              onPress={() => setIsCameraOpen(true)}
-            >
-              <View style={styles.photoIconWrapper}>
-                <MaterialIcons
-                  style={styles.photoIcon}
-                  name="photo-camera"
-                  size={24}
-                  color="grey"
-                />
-              </View>
+            )}
+            <TouchableOpacity onPress={pickImage}>
+              <Text style={styles.photoAction}>Завантажити фото з Галереї</Text>
             </TouchableOpacity>
-          )}
-          <TouchableOpacity style={{ marginTop: 8 }} onPress={pickImage}>
-            <Text style={styles.photoAction}>Завантажити фото з Галереї</Text>
-          </TouchableOpacity>
-          <View style={{ gap: 16 }}>
-            <TextInput
-              style={styles.input}
-              clearButtonMode="while-editing"
-              placeholder="Назва..."
-                onChangeText={(text) => setNameInput(text)}
-                value={nameInput}
-            />
-            <View>
+            <View style={{ gap: 16 }}>
               <TextInput
                 style={styles.input}
                 clearButtonMode="while-editing"
-                placeholder="Місцевість..."
+                placeholder="Назва..."
+                onChangeText={(text) => setNameInput(text)}
+                value={nameInput}
+              />
+              <View>
+                <TextInput
+                  style={styles.input}
+                  clearButtonMode="while-editing"
+                  placeholder="Місцевість..."
                   onChangeText={(text) => setLocationInput(text)}
                   value={locationInput}
-              />
-              <EvilIcons
-                style={{ position: "absolute", bottom: 20, left: 0 }}
-                name="location"
-                size={24}
-                color="black"
-              />
+                />
+                <EvilIcons
+                  style={{ position: "absolute", bottom: 20, left: 0 }}
+                  name="location"
+                  size={24}
+                  color="black"
+                />
+              </View>
+              <TouchableOpacity style={styles.btn} onPress={handlesubmit}>
+                <Text style={styles.btnText}>Опублікувати</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.btn} onPress={handlesubmit}>
-              <Text style={styles.btnText}>Опублікувати</Text>
-            </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       )}
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { paddingLeft: 16, paddingRight: 16, paddingTop: 32 },
+  container: {
+    flex: 1,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 32,
+    paddingBottom: 16,
+    justifyContent: "space-between",
+    gap: 8,
+  },
   cameraContainer: { flex: 1 },
   camera: { flex: 1 },
   photoView: {
@@ -199,12 +227,21 @@ const styles = StyleSheet.create({
   },
 
   flipContainer: {
-    flex: 0.1,
-    alignSelf: "flex-end",
+    position: "absolute",
+    bottom: 16,
+    right: 16,
   },
 
-  button: { alignSelf: "center" },
-
+  button: {
+    position: "absolute",
+    bottom: 10,
+    alignSelf: "center",
+  },
+  cameraCloseBtn: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+  },
   takePhotoOut: {
     borderWidth: 2,
     borderColor: "white",
@@ -226,7 +263,7 @@ const styles = StyleSheet.create({
   },
   pictureBackdrop: {
     borderRadius: 8,
-    height: 240,
+    flex: 1,
     backgroundColor: "#E8E8E8",
     alignItems: "center",
     justifyContent: "center",
@@ -261,7 +298,6 @@ const styles = StyleSheet.create({
     height: 51,
     backgroundColor: "#ff6c00",
     borderRadius: 100,
-    marginTop: 27,
 
     flexDirection: "row",
     justifyContent: "center",

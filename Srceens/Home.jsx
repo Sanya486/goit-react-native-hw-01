@@ -32,7 +32,7 @@ const Home = () => {
             height: 40,
             alignSelf: "center",
           },
-          tabBarStyle: { height: 83, alignItems: "center" },
+          tabBarStyle: { height: 83, alignItems: "center", display: 'flex' },
           tabBarShowLabel: false,
         })}
       >
