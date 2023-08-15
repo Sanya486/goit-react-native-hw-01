@@ -15,10 +15,14 @@ import { AntDesign } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { useNavigation } from "@react-navigation/native";
+import { registerDB } from "../firebaseApi";
+import { useDispatch, useSelector } from "react-redux";
+import { selectEmail } from "../redux/selectors";
 
 
 const RegistrationScreen = () => {
-      const navigation = useNavigation();
+  const navigation = useNavigation();
+  const dispatch = useDispatch()
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -43,9 +47,13 @@ const RegistrationScreen = () => {
             <Text style={styles.title}>Реєстрація</Text>
             <Formik
               initialValues={{ login: "", email: "", password: "" }}
-              onSubmit={(values) => {
-                console.log(values)
-                navigation.navigate("Home")
+              onSubmit={async (values) => {
+                // console.log(values)
+                dispatch(registerDB(values))
+                
+                // if (response.operationType = 'signIn ') {
+                //   navigation.navigate("Home");
+                // }
               }}
               validationSchema={Yup.object({
                 login: Yup.string()
