@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   ImageBackground,
@@ -15,14 +15,21 @@ import { AntDesign } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { useNavigation } from "@react-navigation/native";
-import { registerDB } from "../firebaseApi";
+import { registerDB } from "../redux/firebaseApi";
 import { useDispatch, useSelector } from "react-redux";
-import { selectEmail } from "../redux/selectors";
+import { selectIsLoggedIn } from "../redux/selectors";
 
 
 const RegistrationScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch()
+  const isLoggedIn = useSelector(selectIsLoggedIn)
+
+  useEffect(()=> {
+    if(isLoggedIn){
+      navigation.navigate("Home");
+    }
+  },[isLoggedIn])
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -48,12 +55,7 @@ const RegistrationScreen = () => {
             <Formik
               initialValues={{ login: "", email: "", password: "" }}
               onSubmit={async (values) => {
-                // console.log(values)
                 dispatch(registerDB(values))
-                
-                // if (response.operationType = 'signIn ') {
-                //   navigation.navigate("Home");
-                // }
               }}
               validationSchema={Yup.object({
                 login: Yup.string()

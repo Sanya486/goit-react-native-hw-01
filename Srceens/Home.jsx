@@ -5,9 +5,13 @@ import CreatePostsScreen from './CreatePostsScreen';
 import ProfileScreen from './ProfileScreen';
 import { AntDesign } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native";
+import { useDispatch } from "react-redux";
+import { logOut } from "../redux/firebaseApi";
 
 const Home = () => {
     const Tab = createBottomTabNavigator()
+    const dispatch = useDispatch()
     return (
       <Tab.Navigator
         screenOptions={({ route }) => ({
@@ -41,7 +45,9 @@ const Home = () => {
           component={PostsScreen}
           options={{
             headerRight: () => (
-              <Ionicons name="exit-outline" size={24} color="black" />
+             <TouchableOpacity onPress={()=> dispatch(logOut())}>
+               <Ionicons name="exit-outline" size={24} color="black" />
+               </TouchableOpacity>
             ),
             headerRightContainerStyle: { paddingRight: 16 },
           }}

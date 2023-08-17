@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, } from "react";
+import {useSelector} from 'react-redux'
+import { selectUid } from "../redux/selectors";
 import {
   View,
   Text,
@@ -14,17 +16,22 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { MaterialIcons, EvilIcons, Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
+import { useDispatch } from "react-redux";
+import { writeDataToFirestore } from "../redux/firebaseApi";
 
 const CreatePostsScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [photo, setPhoto] = useState(null);
+  const [photoFile, setPhotoFile] = useState();
   const [location, setLocation] = useState(null);
   const [nameInput, setNameInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
+  const dispatch = useDispatch()
+  const uid = useSelector(selectUid)
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -44,6 +51,7 @@ const CreatePostsScreen = ({ navigation }) => {
   }
 
   const pickImage = async () => {
+   try {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -52,13 +60,20 @@ const CreatePostsScreen = ({ navigation }) => {
     });
 
     if (!result.canceled) {
-      console.log(result);
-      setPhoto(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      const response = await fetch(uri);
+      const file = await response.blob();
+      setPhoto(uri);
+      console.log(file)
+      setPhotoFile(file)
       const data = await MediaLibrary.getAssetInfoAsync(
         result.assets[0].assetId
       );
       setLocation(data.location);
     }
+   } catch (error) {
+    console.log(error)
+   }
   };
 
   const handlesubmit = () => {
@@ -70,11 +85,13 @@ const CreatePostsScreen = ({ navigation }) => {
       });
       return;
     }
-    const postData = { nameInput, locationInput, photo, location };
+    const postData = {uid,  nameInput, locationInput, photoFile, location };
     setPhoto(null),
       setLocation(null),
       setNameInput(""),
       setLocationInput(""),
+      setPhotoFile(null)
+      dispatch(writeDataToFirestore(postData))
       navigation.jumpTo("Публікації", postData);
   };
 

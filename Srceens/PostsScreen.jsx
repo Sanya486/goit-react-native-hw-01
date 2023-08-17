@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import {
   View,
   Text,
@@ -7,26 +7,40 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
-  Button,
   SafeAreaView,
 } from "react-native";
 import { EvilIcons } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
+import { useDispatch, useSelector } from "react-redux";
+import { selectIsLoggedIn, selectPostImages, selectPostsData, selectUid } from "../redux/selectors";
+import { getAllposts, getAllpostsImages } from "../redux/firebaseApi";
 
-const PostsScreen = ({ route, navigation }) => {
+
+
+const PostsScreen = ({ navigation }) => {
   const tabBarHeight = useBottomTabBarHeight();
-  const [posts, setPosts] = useState([]);
+  
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [marker, setMarker] = useState(null);
-  let postData = route.params;
-  console.log(postData);
+
+const dispatch = useDispatch()
+  
+const isLoggedIn = useSelector(selectIsLoggedIn)
+  const uid = useSelector(selectUid)
+  const postsData = useSelector(selectPostsData)
+  const postImages = useSelector(selectPostImages)
+
   useEffect(() => {
-    if (postData !== undefined) {
-      setPosts([...posts, postData]);
-      postData = undefined;
+    dispatch(getAllposts(uid))
+    dispatch(getAllpostsImages(uid))
+  }, []);
+
+  useEffect (()=> {
+    if(!isLoggedIn){
+      navigation.navigate('Login')
     }
-  }, [postData]);
+  },[isLoggedIn])
 
   const OnLocation = (location, name) => {
     console.log("MArker location", location);
@@ -86,10 +100,10 @@ const PostsScreen = ({ route, navigation }) => {
           </View>
         </View>
         <View>
-          {posts.length !== 0 && (
+          {postsData.length !== 0 && (
             <FlatList
-              data={posts}
-              renderItem={({ item }) => {
+              data={postsData}
+              renderItem={ ({ item }) => {
                 let locationText;
 
                 if (!item.locationInput && !item.location) {
@@ -103,11 +117,12 @@ const PostsScreen = ({ route, navigation }) => {
                     <Text style={{ fontSize: 16 }}>{item.locationInput}</Text>
                   );
                 }
+
                 return (
                   <View style={{ gap: 8, paddingBottom: 32 }}>
                     <Image
                       style={{ height: 240, width: "100%", borderRadius: 10 }}
-                      source={{ uri: item.photo }}
+                      source={{ uri: postImages[item.id] }}
                     />
                     <Text style={{ fontFamily: "Roboto-Medium", fontSize: 16 }}>
                       {item.nameInput}
