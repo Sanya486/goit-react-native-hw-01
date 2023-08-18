@@ -13,42 +13,45 @@ import { EvilIcons } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { useDispatch, useSelector } from "react-redux";
-import { selectIsLoggedIn, selectPostImages, selectPostsData, selectUid } from "../redux/selectors";
+import {
+  selectIsLoggedIn,
+  selectPostImages,
+  selectPostsData,
+  selectUid,
+} from "../redux/selectors";
 import { getAllposts, getAllpostsImages } from "../redux/firebaseApi";
+import { auth } from "../config";
 
-
-
-const PostsScreen = ({ navigation }) => {
+const PostsScreen = ({ route, navigation }) => {
   const tabBarHeight = useBottomTabBarHeight();
-  
+
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [marker, setMarker] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-const dispatch = useDispatch()
-  
-const isLoggedIn = useSelector(selectIsLoggedIn)
-  const uid = useSelector(selectUid)
-  const postsData = useSelector(selectPostsData)
-  const postImages = useSelector(selectPostImages)
+  const dispatch = useDispatch();
+
+  const isLoggedIn = useSelector(selectIsLoggedIn);
+  const uid = useSelector(selectUid);
+  const postsData = useSelector(selectPostsData);
+  const postImages = useSelector(selectPostImages);
 
   useEffect(() => {
-    dispatch(getAllposts(uid))
-    dispatch(getAllpostsImages(uid))
+    dispatch(getAllposts(uid));
+    dispatch(getAllpostsImages(uid));
   }, []);
 
-  useEffect (()=> {
-    if(!isLoggedIn){
-      navigation.navigate('Login')
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigation.navigate("Login");
     }
-  },[isLoggedIn])
+  }, [isLoggedIn]);
 
   const OnLocation = (location, name) => {
     console.log("MArker location", location);
     setIsMapOpen(true);
     setMarker({ location, name });
   };
-
-
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -93,17 +96,24 @@ const isLoggedIn = useSelector(selectIsLoggedIn)
         <View style={styles.userTextWrapper}>
           <Image source={require("../images/User.png")} />
           <View>
-            <Text style={styles.userName}>Natali Romanova</Text>
+            <Text style={styles.userName}>{auth.currentUser?.displayName}</Text>
             <Text style={{ fontSize: 11, color: "#212121CC" }}>
-              email@example.com
+              {auth.currentUser?.email}{" "}
             </Text>
           </View>
         </View>
         <View>
           {postsData.length !== 0 && (
             <FlatList
+              refreshing={isRefreshing}
+              onRefresh={() => {
+                setIsRefreshing(true);
+                dispatch(getAllposts(uid));
+                dispatch(getAllpostsImages(uid));
+                setIsRefreshing(false);
+              }}
               data={postsData}
-              renderItem={ ({ item }) => {
+              renderItem={({ item }) => {
                 let locationText;
 
                 if (!item.locationInput && !item.location) {
@@ -122,7 +132,11 @@ const isLoggedIn = useSelector(selectIsLoggedIn)
                   <View style={{ gap: 8, paddingBottom: 32 }}>
                     <Image
                       style={{ height: 240, width: "100%", borderRadius: 10 }}
-                      source={{ uri: postImages[item.id] }}
+                      source={{
+                        uri:
+                          postImages[item.id] ||
+                          "https://joadre.com/wp-content/uploads/2019/02/no-image.jpg",
+                      }}
                     />
                     <Text style={{ fontFamily: "Roboto-Medium", fontSize: 16 }}>
                       {item.nameInput}
@@ -135,7 +149,13 @@ const isLoggedIn = useSelector(selectIsLoggedIn)
                     >
                       <TouchableOpacity
                         style={{ flexDirection: "row" }}
-                        onPress={() => navigation.navigate("Comments", item)}
+                        onPress={() =>
+                          navigation.navigate(
+                            "Comments",
+                            postImages[item.id] ||
+                              "https://joadre.com/wp-content/uploads/2019/02/no-image.jpg"
+                          )
+                        }
                       >
                         <EvilIcons name="comment" size={24} color="black" />
                         <Text style={{ fontSize: 16 }}>0</Text>

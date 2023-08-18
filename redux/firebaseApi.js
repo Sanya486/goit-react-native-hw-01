@@ -15,14 +15,19 @@ import { storage } from "../config";
 
 
 
-export const registerDB = createAsyncThunk("/signUp", async ({ email, password }, thunk) => {
+export const registerDB = createAsyncThunk("/signUp", async ({ email, password, login }, thunk) => {
   try {
     const response = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
-    return response.user.uid;
+  
+    return {
+      displayName: response.user.displayName,
+      email: response.user.email,
+      uid: response.user.uid,
+    };
   } catch (error) {
  return thunk.rejectWithValue(error.customData._tokenResponse.error.message);
   }
@@ -31,27 +36,17 @@ export const registerDB = createAsyncThunk("/signUp", async ({ email, password }
 
 export const loginDB = createAsyncThunk("/signIn", async ({ email, password }, thunk) => {
   try {
-    const credentials = await signInWithEmailAndPassword(auth, email, password);
-    console.log(credentials)
-    return credentials.user.uid;
+    const response = await signInWithEmailAndPassword(auth, email, password);
+    return {
+      displayName: response.user.displayName,
+      email: response.user.email,
+      uid: response.user.uid,
+    };
   } catch (error) {
-    return thunk.rejectWithValue(error.customData._tokenResponse.error.message);
+    return thunk.rejectWithValue(error.message);
   }
 });
 
-export const updateUserProfile = async (update) => {
-  const user = auth.currentUser;
-
-  // якщо такий користувач знайдений
-  if (user) {
-    // оновлюємо його профайл
-    try {
-      await updateProfile(user, update);
-    } catch (error) {
-      throw error;
-    }
-  }
-};
 
 export const logOut = createAsyncThunk("/logout", async (_, thunk) => {
   try {
@@ -59,26 +54,27 @@ export const logOut = createAsyncThunk("/logout", async (_, thunk) => {
     console.log(response)
     return response
   } catch (error) {
-    return thunk.rejectWithValue(error.customData._tokenResponse.error.message);
+    return thunk.rejectWithValue(error.message);
   }
 });
 
 
 // =================== FireStore ===================
 
-export const writeDataToFirestore = createAsyncThunk('/creatPost', async ({uid,  nameInput, locationInput, photoFile, location}, thunk) => {
+export const writeDataToFirestore = createAsyncThunk('/creatPost', async ({uid,  nameInput, locationInput, photoFile, location, timeNow}, thunk) => {
   try {
     const docRef = await addDoc(collection(db, `users/${uid}/posts`), {
       nameInput,
       locationInput,
-      location
+      location,
+      timeNow
     });
     console.log(docRef);
     const storageRef = ref(storage, `users/${uid}/postImages/${docRef.id}`)
     await uploadBytes(storageRef, photoFile)
   
-  } catch (e) {
-    return thunk.rejectWithValue(e.customData._tokenResponse.error.message);
+  } catch (error) {
+    return thunk.rejectWithValue(error.message);
   }
 });
 
@@ -91,19 +87,10 @@ export const getAllposts = createAsyncThunk('getAllPosts', async (uid, thunk) =>
       const data = doc.data()
       const postData = {...data, id}
       posts.push(postData)})
-    // const listRef = ref(storage, `users/${uid}/postImages`)
-    // const images = await listAll(listRef)
-    // images.items.forEach(async (item)  => {
-    //  const url = await getDownloadURL(item)
-    
-    // })
-    // const cumulativeArr = posts.map((post, index) => {
-    //   return {...post, photo: imagesArr[0]}
-    // })
-    console.log(posts)
+      posts.sort((a,b)=> b.timeNow - a.timeNow)
     return posts
   } catch (error) {
-    return thunk.rejectWithValue(e.customData._tokenResponse.error.message);
+    return thunk.rejectWithValue(error.message);
   }
 })
 
@@ -113,7 +100,6 @@ export const getAllpostsImages = createAsyncThunk('getAllPostsImages', async (ui
     const listRef = ref(storage, `users/${uid}/postImages`)
     const images = await listAll(listRef)
     images.items.forEach( (item)  => {
-      console.log(item)
       const id  = item.name
       const url =  getDownloadURL(item)
       const imageData = {
@@ -123,22 +109,16 @@ export const getAllpostsImages = createAsyncThunk('getAllPostsImages', async (ui
      imagesArr.push(imageData)
     })
    const arr =  await Promise.all(imagesArr.map(image=> image.imagePromise))
-  //  const imagesUrl = arr.map((item, index)=> {
-  //   const id = imagesArr[index].id
-  //   return {
-  //     item,
-  //     id
-  //   }
-  //  })
+
   const imagesUrl = {}
   arr.forEach((item, index)=> {
     const id = imagesArr[index].id
     imagesUrl[id] = item
   })
-   console.log(imagesUrl)
+  
     return imagesUrl
   } catch (error) {
-    return thunk.rejectWithValue(e.customData._tokenResponse.error.message);
+    return thunk.rejectWithValue(error.message);
   }
 })
 

@@ -5,7 +5,7 @@ const slice = createSlice({
   name: "user",
   initialState: {
     isLoggedIn: false,
-    uid: "",
+    data: null,
     error: "",
     isLoading: false,
   },
@@ -13,17 +13,16 @@ const slice = createSlice({
     builder
       .addCase(registerDB.fulfilled, (state, { payload }) => {
         state.isLoggedIn = true;
-        state.uid = payload;
+        state.data = payload;
         state.isLoading = false;
       }).addCase(loginDB.fulfilled, (state, {payload})=> {
         state.isLoggedIn = true;
-        state.uid = payload;
+        state.data = payload;
         state.isLoading = false;
       }).addCase(logOut.fulfilled, (state, {payload})=> {
-        state.isLoggedIn = false;
-        state.email= '';
-        state.uid = '';
-
+        state.isLoggedIn = false
+        state.data = null;
+         state.isLoading = false;
       })
       .addMatcher((action)=> action.type.endsWith('/pending', (state)=>{
         state.isLoading = true

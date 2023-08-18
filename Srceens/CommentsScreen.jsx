@@ -10,7 +10,7 @@ const CommentsScreen = ({ route }) => {
         <View style={styles.container}>
           <Image
             style={{ height: 240, width: "100%", borderRadius: 10 }}
-            source={{ uri: data.photo }}
+            source={{ uri: data }}
           />
           <KeyboardAvoidingView behavior="padding">
             <TextInput style={styles.input} placeholder="Коментувати..." />

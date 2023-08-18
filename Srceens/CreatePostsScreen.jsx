@@ -64,7 +64,6 @@ const CreatePostsScreen = ({ navigation }) => {
       const response = await fetch(uri);
       const file = await response.blob();
       setPhoto(uri);
-      console.log(file)
       setPhotoFile(file)
       const data = await MediaLibrary.getAssetInfoAsync(
         result.assets[0].assetId
@@ -85,7 +84,8 @@ const CreatePostsScreen = ({ navigation }) => {
       });
       return;
     }
-    const postData = {uid,  nameInput, locationInput, photoFile, location };
+    const timeNow = Date.now()
+    const postData = {uid,  nameInput, locationInput, photoFile, location, timeNow };
     setPhoto(null),
       setLocation(null),
       setNameInput(""),
@@ -119,10 +119,13 @@ const CreatePostsScreen = ({ navigation }) => {
                   if (cameraRef) {
                     const { uri } = await cameraRef.takePictureAsync();
                     const asset = await MediaLibrary.createAssetAsync(uri);
+                    const response = await fetch(uri);
+                    const file = await response.blob();
                     setLocation(null);
                     Location.getCurrentPositionAsync({}).then((result) => {
                       setLocation(result.coords);
                     });
+                    setPhotoFile(file)
                     setPhoto(uri);
                     setIsCameraOpen(false);
                   }

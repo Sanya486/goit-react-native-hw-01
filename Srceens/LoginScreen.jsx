@@ -26,6 +26,7 @@ const LoginScreen = () => {
       const isLoggedIn = useSelector(selectIsLoggedIn)
       useEffect(()=> {
         if(isLoggedIn){
+          
           navigation.navigate("Home");
         }
       },[isLoggedIn])

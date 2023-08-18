@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   ImageBackground,
@@ -10,7 +10,10 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
+  Pressable,
 } from "react-native";
+import { updateProfile} from "firebase/auth";
+import * as ImagePicker from "expo-image-picker";
 import { AntDesign } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -18,18 +21,51 @@ import { useNavigation } from "@react-navigation/native";
 import { registerDB } from "../redux/firebaseApi";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsLoggedIn } from "../redux/selectors";
+import { auth } from "../config";
 
 
 const RegistrationScreen = () => {
+  const [photo, setPhoto] = useState(null);
+const [login, setLogin] = useState();
+
   const navigation = useNavigation();
   const dispatch = useDispatch()
   const isLoggedIn = useSelector(selectIsLoggedIn)
 
+
+  useEffect(() => {
+    (async () => {
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    })();
+  }, []);
+
   useEffect(()=> {
     if(isLoggedIn){
+      (async ()=>{
+        await updateProfile (auth.currentUser, {
+          displayName: login
+        })
+      })()
       navigation.navigate("Home");
     }
   },[isLoggedIn])
+
+  const pickImage = async () => {
+    try {
+     let result = await ImagePicker.launchImageLibraryAsync({
+       mediaTypes: ImagePicker.MediaTypeOptions.All,
+       allowsEditing: true,
+       aspect: [4, 3],
+       quality: 1,
+     });
+     console.log(result)
+     if (!result.canceled) {
+      setPhoto(result.assets[0].uri);
+     }
+    } catch (error) {
+     console.log(error)
+    }
+   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -44,18 +80,25 @@ const RegistrationScreen = () => {
         >
           <View style={styles.contentWrapper}>
             <View style={styles.avatar}>
-              <AntDesign
-                style={styles.addIcon}
-                name="pluscircleo"
-                size={25}
-                color="#FF6C00"
-              />
+                <TouchableWithoutFeedback  onPress={pickImage}>
+                  <ImageBackground style={{flex:1}} source={{uri: photo || 'https://phonoteka.org/uploads/posts/2022-02/1645125186_2-phonoteka-org-p-kartinka-serii-fon-odnotonnii-2.jpg'}}  >
+                          <View style={styles.addIcon}>
+                            <AntDesign
+                              name="pluscircle"
+                              size={30}
+                              color="#FF6C00"
+                            />
+                          </View>
+                  </ImageBackground>
+                </TouchableWithoutFeedback>
             </View>
             <Text style={styles.title}>Реєстрація</Text>
             <Formik
               initialValues={{ login: "", email: "", password: "" }}
-              onSubmit={async (values) => {
+              onSubmit={(values, action) => {
+                setLogin(values.login)
                 dispatch(registerDB(values))
+                action.reset()
               }}
               validationSchema={Yup.object({
                 login: Yup.string()
