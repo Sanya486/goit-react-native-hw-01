@@ -22,7 +22,7 @@ const slice = createSlice({
       }).addCase(logOut.fulfilled, (state, {payload})=> {
         state.isLoggedIn = false
         state.data = null;
-         state.isLoading = false;
+        state.isLoading = false
       })
       .addMatcher((action)=> action.type.endsWith('/pending', (state)=>{
         state.isLoading = true

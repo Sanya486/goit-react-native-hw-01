@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -20,7 +20,10 @@ import {
   selectUid,
 } from "../redux/selectors";
 import { getAllposts, getAllpostsImages } from "../redux/firebaseApi";
-import { auth } from "../config";
+import { auth, db } from "../config";
+import { onSnapshot, query, collection } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const PostsScreen = ({ route, navigation }) => {
   const tabBarHeight = useBottomTabBarHeight();
@@ -36,7 +39,20 @@ const PostsScreen = ({ route, navigation }) => {
   const postsData = useSelector(selectPostsData);
   const postImages = useSelector(selectPostImages);
 
+  const [postDataTest, setPostDataTest] = useState([]);
+  console.log(postDataTest)
+
   useEffect(() => {
+    const q = query(collection(db, `users/${uid}/posts`));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      let postsFirebase = [];
+      querySnapshot.forEach((doc) => {
+        postsFirebase.push({data:doc.data(), id: doc.id});
+      });
+      postsFirebase.sort((a,b)=> a.timeNow - b.timeNow)
+      setPostDataTest(postsFirebase)
+    });
+
     dispatch(getAllposts(uid));
     dispatch(getAllpostsImages(uid));
   }, []);
@@ -48,7 +64,6 @@ const PostsScreen = ({ route, navigation }) => {
   }, [isLoggedIn]);
 
   const OnLocation = (location, name) => {
-    console.log("MArker location", location);
     setIsMapOpen(true);
     setMarker({ location, name });
   };
@@ -103,7 +118,7 @@ const PostsScreen = ({ route, navigation }) => {
           </View>
         </View>
         <View>
-          {postsData.length !== 0 && (
+          {postDataTest.length !== 0 && (
             <FlatList
               refreshing={isRefreshing}
               onRefresh={() => {
@@ -112,19 +127,19 @@ const PostsScreen = ({ route, navigation }) => {
                 dispatch(getAllpostsImages(uid));
                 setIsRefreshing(false);
               }}
-              data={postsData}
-              renderItem={({ item }) => {
+              data={postDataTest}
+              renderItem={({ item: {data, id} }) => {
                 let locationText;
 
-                if (!item.locationInput && !item.location) {
+                if (!data.locationInput && !data.location) {
                   locationText = (
                     <Text style={{ fontSize: 16 }}>Локація відсутня</Text>
                   );
-                } else if (item.location && !item.locationInput) {
+                } else if (data.location && !data.locationInput) {
                   locationText = <Text style={{ fontSize: 16 }}>Локація</Text>;
                 } else {
                   locationText = (
-                    <Text style={{ fontSize: 16 }}>{item.locationInput}</Text>
+                    <Text style={{ fontSize: 16 }}>{data.locationInput}</Text>
                   );
                 }
 
@@ -134,12 +149,12 @@ const PostsScreen = ({ route, navigation }) => {
                       style={{ height: 240, width: "100%", borderRadius: 10 }}
                       source={{
                         uri:
-                          postImages[item.id] ||
+                          postImages[id] ||
                           "https://joadre.com/wp-content/uploads/2019/02/no-image.jpg",
                       }}
                     />
                     <Text style={{ fontFamily: "Roboto-Medium", fontSize: 16 }}>
-                      {item.nameInput}
+                      {data.nameInput}
                     </Text>
                     <View
                       style={{
@@ -150,20 +165,20 @@ const PostsScreen = ({ route, navigation }) => {
                       <TouchableOpacity
                         style={{ flexDirection: "row" }}
                         onPress={() =>
-                          navigation.navigate(
-                            "Comments",
-                            postImages[item.id] ||
-                              "https://joadre.com/wp-content/uploads/2019/02/no-image.jpg"
-                          )
+                          navigation.navigate("Comments", {
+                            photo:
+                              postImages[item.id] ||
+                              "https://joadre.com/wp-content/uploads/2019/02/no-image.jpg",
+                            id: item.id,
+                          })
                         }
                       >
                         <EvilIcons name="comment" size={24} color="black" />
-                        <Text style={{ fontSize: 16 }}>0</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={{ flexDirection: "row" }}
                         onPress={() =>
-                          OnLocation(item.location, item.nameInput)
+                          OnLocation(data.location, data.nameInput)
                         }
                       >
                         <EvilIcons name="location" size={24} color="black" />
