@@ -17,6 +17,7 @@ import { addComment } from "../redux/firebaseApi";
 import { selectUid } from "../redux/selectors";
 import { query, collection, onSnapshot } from "firebase/firestore";
 import { db } from "../config";
+import { addPostsToRedux } from "../redux/postSlice";
 
 
 const CommentsScreen = ({ route }) => {

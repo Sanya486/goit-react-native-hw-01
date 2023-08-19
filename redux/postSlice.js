@@ -9,7 +9,12 @@ import { addComment, getAllposts, getAllpostsImages, uploadPhototoFirestore, wri
         postComents: [],
         IsLoading: 'false',
         error: '',
-    },
+     },
+     reducers: {
+         addPostsToRedux: (state,  {payload} ) => {
+             state.postsData = payload
+         }
+     },
     extraReducers: (builder) => {
         builder
         .addCase(writeDataToFirestore.pending, (state, {payload})=>{
@@ -49,3 +54,5 @@ import { addComment, getAllposts, getAllpostsImages, uploadPhototoFirestore, wri
 })
  
 export const postsSliceReducer = postSlice.reducer
+
+export const { addPostsToRedux } = postSlice.actions

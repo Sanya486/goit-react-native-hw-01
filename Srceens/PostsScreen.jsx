@@ -23,6 +23,7 @@ import { getAllposts, getAllpostsImages } from "../redux/firebaseApi";
 import { auth, db } from "../config";
 import { onSnapshot, query, collection } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { addPostsToRedux } from "../redux/postSlice";
 
 
 const PostsScreen = ({ route, navigation }) => {
@@ -39,23 +40,27 @@ const PostsScreen = ({ route, navigation }) => {
   const postsData = useSelector(selectPostsData);
   const postImages = useSelector(selectPostImages);
 
-  const [postDataTest, setPostDataTest] = useState([]);
-  console.log(postDataTest)
+  // const [postDataTest, setPostDataTest] = useState([]);
+
 
   useEffect(() => {
+    AsyncStorage.clear()
     const q = query(collection(db, `users/${uid}/posts`));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       let postsFirebase = [];
       querySnapshot.forEach((doc) => {
         postsFirebase.push({data:doc.data(), id: doc.id});
       });
-      postsFirebase.sort((a,b)=> a.timeNow - b.timeNow)
-      setPostDataTest(postsFirebase)
+      postsFirebase.sort((a, b) => b.data.timeNow - a.data.timeNow)
+      dispatch(addPostsToRedux(postsFirebase))
+      // setPostDataTest(postsFirebase)
     });
-
-    dispatch(getAllposts(uid));
-    dispatch(getAllpostsImages(uid));
   }, []);
+
+  useEffect(() => {
+    setTimeout(() => dispatch(getAllpostsImages(uid)), 2000);
+    dispatch(getAllpostsImages(uid));
+  }, [postsData]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -118,7 +123,7 @@ const PostsScreen = ({ route, navigation }) => {
           </View>
         </View>
         <View>
-          {postDataTest.length !== 0 && (
+          {postsData.length !== 0 && (
             <FlatList
               refreshing={isRefreshing}
               onRefresh={() => {
@@ -127,19 +132,19 @@ const PostsScreen = ({ route, navigation }) => {
                 dispatch(getAllpostsImages(uid));
                 setIsRefreshing(false);
               }}
-              data={postDataTest}
-              renderItem={({ item: {data, id} }) => {
+              data={postsData}
+              renderItem={({ item: { data, id } }) => {
                 let locationText;
 
-                if (!data.locationInput && !data.location) {
+                if (!data?.locationInput && !data?.location) {
                   locationText = (
                     <Text style={{ fontSize: 16 }}>Локація відсутня</Text>
                   );
-                } else if (data.location && !data.locationInput) {
+                } else if (data?.location && !data?.locationInput) {
                   locationText = <Text style={{ fontSize: 16 }}>Локація</Text>;
                 } else {
                   locationText = (
-                    <Text style={{ fontSize: 16 }}>{data.locationInput}</Text>
+                    <Text style={{ fontSize: 16 }}>{data?.locationInput}</Text>
                   );
                 }
 
@@ -154,7 +159,7 @@ const PostsScreen = ({ route, navigation }) => {
                       }}
                     />
                     <Text style={{ fontFamily: "Roboto-Medium", fontSize: 16 }}>
-                      {data.nameInput}
+                      {data?.nameInput}
                     </Text>
                     <View
                       style={{
@@ -167,9 +172,9 @@ const PostsScreen = ({ route, navigation }) => {
                         onPress={() =>
                           navigation.navigate("Comments", {
                             photo:
-                              postImages[item.id] ||
+                              postImages[id] ||
                               "https://joadre.com/wp-content/uploads/2019/02/no-image.jpg",
-                            id: item.id,
+                            id,
                           })
                         }
                       >
@@ -178,7 +183,7 @@ const PostsScreen = ({ route, navigation }) => {
                       <TouchableOpacity
                         style={{ flexDirection: "row" }}
                         onPress={() =>
-                          OnLocation(data.location, data.nameInput)
+                          OnLocation(data?.location, data?.nameInput)
                         }
                       >
                         <EvilIcons name="location" size={24} color="black" />
@@ -188,7 +193,7 @@ const PostsScreen = ({ route, navigation }) => {
                   </View>
                 );
               }}
-              keyExtractor={(post) => post.nameInput}
+              keyExtractor={(post) => post.id}
             />
           )}
         </View>
