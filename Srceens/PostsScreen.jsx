@@ -14,10 +14,13 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  selectDisplayName,
+  selectEmail,
   selectIsLoggedIn,
   selectPostImages,
   selectPostsData,
   selectUid,
+  selectUserData,
 } from "../redux/selectors";
 import { getAllposts, getAllpostsImages } from "../redux/firebaseApi";
 import { auth, db } from "../config";
@@ -37,14 +40,12 @@ const PostsScreen = ({ route, navigation }) => {
 
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const uid = useSelector(selectUid);
+  const displayName = useSelector(selectDisplayName)
+  const email = useSelector(selectEmail)
   const postsData = useSelector(selectPostsData);
   const postImages = useSelector(selectPostImages);
 
-  // const [postDataTest, setPostDataTest] = useState([]);
-
-
   useEffect(() => {
-    AsyncStorage.clear()
     const q = query(collection(db, `users/${uid}/posts`));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       let postsFirebase = [];
@@ -53,8 +54,9 @@ const PostsScreen = ({ route, navigation }) => {
       });
       postsFirebase.sort((a, b) => b.data.timeNow - a.data.timeNow)
       dispatch(addPostsToRedux(postsFirebase))
-      // setPostDataTest(postsFirebase)
     });
+
+    return () => {unsubscribe()}
   }, []);
 
   useEffect(() => {
@@ -116,9 +118,9 @@ const PostsScreen = ({ route, navigation }) => {
         <View style={styles.userTextWrapper}>
           <Image source={require("../images/User.png")} />
           <View>
-            <Text style={styles.userName}>{auth.currentUser?.displayName}</Text>
+            <Text style={styles.userName}>{displayName}</Text>
             <Text style={{ fontSize: 11, color: "#212121CC" }}>
-              {auth.currentUser?.email}{" "}
+              {email}
             </Text>
           </View>
         </View>

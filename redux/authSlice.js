@@ -24,13 +24,13 @@ const slice = createSlice({
         state.data = null;
         state.isLoading = false
       })
-      .addMatcher((action)=> action.type.endsWith('/pending', (state)=>{
+      .addMatcher((action)=> action.type.endsWith('/pending'), (state)=>{
         state.isLoading = true
         state.error = ''
-      })).addMatcher((action)=> action.type.endsWith('/rejected', (state)=>{
+      }).addMatcher((action)=> action.type.endsWith('/rejected'), (state, {payload})=>{
         state.isLoading = false;
         state.error = payload;
-      }))
+      })
   },
 });
 

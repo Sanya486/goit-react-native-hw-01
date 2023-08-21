@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -11,11 +10,13 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { collection, addDoc, getDocs, setDoc, doc } from "firebase/firestore";
 import { db } from "../config";
 import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
-import { storage } from "../config";
+import { storage } from "../config"
+
+
 
 export const registerDB = createAsyncThunk(
   "/signUp",
-  async ({ email, password, login }, thunk) => {
+  async ({ email, password, login, photoFile }, thunk) => {
     try {
       const response = await createUserWithEmailAndPassword(
         auth,
@@ -23,15 +24,20 @@ export const registerDB = createAsyncThunk(
         password
       );
 
+      if(photoFile){
+        const storageRef = ref(storage, `users/${response.user.uid}/userPhoto`);
+        await uploadBytes(storageRef, photoFile);
+      }
+       await updateProfile(auth.currentUser, {displayName: login})
+      
       return {
-        displayName: response.user.displayName,
+        displayName: auth.currentUser.displayName,
         email: response.user.email,
         uid: response.user.uid,
       };
     } catch (error) {
-      return thunk.rejectWithValue(
-        error.customData._tokenResponse.error.message
-      );
+      console.log(error)
+      return thunk.rejectWithValue(error.message);
     }
   }
 );
@@ -55,7 +61,7 @@ export const loginDB = createAsyncThunk(
 export const logOut = createAsyncThunk("/logout", async (_, thunk) => {
   try {
     const response = await signOut(auth);
-    console.log(response);
+
     return response;
   } catch (error) {
     return thunk.rejectWithValue(error.message);

@@ -19,7 +19,6 @@ import { selectIsLoggedIn } from "../redux/selectors";
 import { loginDB } from "../redux/firebaseApi";
 
 
-
 const LoginScreen = () => {
       const navigation = useNavigation();
       const dispatch = useDispatch()

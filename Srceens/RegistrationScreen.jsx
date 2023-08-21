@@ -26,6 +26,7 @@ import { auth } from "../config";
 
 const RegistrationScreen = () => {
   const [photo, setPhoto] = useState(null);
+  const [photoFile, setPhotoFile] = useState(null);
 const [login, setLogin] = useState();
 
   const navigation = useNavigation();
@@ -58,9 +59,12 @@ const [login, setLogin] = useState();
        aspect: [4, 3],
        quality: 1,
      });
-     console.log(result)
+
      if (!result.canceled) {
       setPhoto(result.assets[0].uri);
+      const response = await fetch(result.assets[0].uri);
+      const file = await response.blob();
+      setPhotoFile(file)
      }
     } catch (error) {
      console.log(error)
@@ -81,7 +85,7 @@ const [login, setLogin] = useState();
           <View style={styles.contentWrapper}>
             <View style={styles.avatar}>
                 <TouchableWithoutFeedback  onPress={pickImage}>
-                  <ImageBackground style={{flex:1}} source={{uri: photo || 'https://phonoteka.org/uploads/posts/2022-02/1645125186_2-phonoteka-org-p-kartinka-serii-fon-odnotonnii-2.jpg'}}  >
+                  <ImageBackground style={{flex:1}} source={{uri: photo }}  >
                           <View style={styles.addIcon}>
                             <AntDesign
                               name="pluscircle"
@@ -97,7 +101,7 @@ const [login, setLogin] = useState();
               initialValues={{ login: "", email: "", password: "" }}
               onSubmit={(values, action) => {
                 setLogin(values.login)
-                dispatch(registerDB(values))
+                dispatch(registerDB({...values, photoFile}))
                 action.reset()
               }}
               validationSchema={Yup.object({

@@ -24,8 +24,6 @@ const CommentsScreen = ({ route }) => {
   const [input, setInput] = useState();
   const [comments, setComments] = useState([]);
 
-  console.log(comments)
-
   const uid = useSelector(selectUid)
 
   const dispatch = useDispatch();
