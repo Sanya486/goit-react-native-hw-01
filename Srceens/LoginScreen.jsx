@@ -24,7 +24,7 @@ const LoginScreen = () => {
       const dispatch = useDispatch()
       const isLoggedIn = useSelector(selectIsLoggedIn)
       useEffect(()=> {
-        if(isLoggedIn){
+        if (isLoggedIn) {
           
           navigation.navigate("Home");
         }
@@ -45,8 +45,9 @@ const LoginScreen = () => {
             <Text style={styles.title}>Увійти</Text>
             <Formik
               initialValues={{ email: "", pasfsword: "" }}
-              onSubmit={(values) => {
+              onSubmit={(values, actions) => {
                 dispatch(loginDB(values))
+                actions.resetForm()
               }}
               validationSchema={Yup.object({
                 email: Yup.string()

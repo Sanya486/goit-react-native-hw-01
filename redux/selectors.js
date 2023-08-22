@@ -5,3 +5,4 @@ export const selectEmail = (state) => state.auth.data?.email
 export const selectUserData = (state) => state.auth.data
 export const selectPostsData = (state) => state.posts.postsData
 export const selectPostImages = (state)=> state.posts.postsImages
+export const selectUserPhoto = (state) => state.auth.userPhoto

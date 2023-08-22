@@ -21,12 +21,14 @@ import {
   selectPostsData,
   selectUid,
   selectUserData,
+  selectUserPhoto,
 } from "../redux/selectors";
-import { getAllposts, getAllpostsImages } from "../redux/firebaseApi";
+import { getAllposts, getAllpostsImages, getUserPhoto } from "../redux/firebaseApi";
 import { auth, db } from "../config";
 import { onSnapshot, query, collection } from "firebase/firestore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { addPostsToRedux } from "../redux/postSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const PostsScreen = ({ route, navigation }) => {
@@ -44,6 +46,7 @@ const PostsScreen = ({ route, navigation }) => {
   const email = useSelector(selectEmail)
   const postsData = useSelector(selectPostsData);
   const postImages = useSelector(selectPostImages);
+  const userPhoto = useSelector(selectUserPhoto)
 
   useEffect(() => {
     const q = query(collection(db, `users/${uid}/posts`));
@@ -69,6 +72,10 @@ const PostsScreen = ({ route, navigation }) => {
       navigation.navigate("Login");
     }
   }, [isLoggedIn]);
+
+  useEffect(()=> {
+    dispatch(getUserPhoto(uid))
+  }, [])
 
   const OnLocation = (location, name) => {
     setIsMapOpen(true);
@@ -116,7 +123,7 @@ const PostsScreen = ({ route, navigation }) => {
 
       <View style={[styles.container, { marginBottom: tabBarHeight + 10 }]}>
         <View style={styles.userTextWrapper}>
-          <Image source={require("../images/User.png")} />
+          <Image style={{width: 60, height: 60, borderRadius: 16}} source={{uri: userPhoto}} />
           <View>
             <Text style={styles.userName}>{displayName}</Text>
             <Text style={{ fontSize: 11, color: "#212121CC" }}>
@@ -129,10 +136,10 @@ const PostsScreen = ({ route, navigation }) => {
             <FlatList
               refreshing={isRefreshing}
               onRefresh={() => {
-                setIsRefreshing(true);
-                dispatch(getAllposts(uid));
-                dispatch(getAllpostsImages(uid));
-                setIsRefreshing(false);
+                // setIsRefreshing(true);
+                // dispatch(getAllposts(uid));
+                // dispatch(getAllpostsImages(uid));
+                // setIsRefreshing(false);
               }}
               data={postsData}
               renderItem={({ item: { data, id } }) => {

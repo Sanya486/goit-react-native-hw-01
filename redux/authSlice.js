@@ -1,11 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginDB, registerDB, logOut } from "./firebaseApi";
+import { loginDB, registerDB, logOut, getUserPhoto } from "./firebaseApi";
+
+
 
 const slice = createSlice({
-  name: "user",
+  name: "auth",
   initialState: {
     isLoggedIn: false,
     data: null,
+    userPhoto: '',
     error: "",
     isLoading: false,
   },
@@ -22,6 +25,9 @@ const slice = createSlice({
       }).addCase(logOut.fulfilled, (state, {payload})=> {
         state.isLoggedIn = false
         state.data = null;
+        state.isLoading = false
+      }).addCase(getUserPhoto.fulfilled, (state, {payload})=> {
+        state.userPhoto = payload
         state.isLoading = false
       })
       .addMatcher((action)=> action.type.endsWith('/pending'), (state)=>{

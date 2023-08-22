@@ -38,7 +38,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        ignoredPaths: ["firebase", "firestore"],
+        // ignoredPaths: ["firebase", "firestore"],
       },
     }),
 });

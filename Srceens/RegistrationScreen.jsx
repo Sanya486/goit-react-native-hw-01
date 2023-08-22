@@ -102,7 +102,7 @@ const [login, setLogin] = useState();
               onSubmit={(values, action) => {
                 setLogin(values.login)
                 dispatch(registerDB({...values, photoFile}))
-                action.reset()
+                action.resetForm()
               }}
               validationSchema={Yup.object({
                 login: Yup.string()

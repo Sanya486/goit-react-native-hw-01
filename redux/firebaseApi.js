@@ -68,6 +68,15 @@ export const logOut = createAsyncThunk("/logout", async (_, thunk) => {
   }
 });
 
+export const getUserPhoto = createAsyncThunk('/getUserPhoto',async (uid, thunk)=> {
+  try {
+    const imageRel = ref(storage, `users/${uid}/userPhoto`);
+    return await getDownloadURL(imageRel);
+  } catch (error) {
+    thunk.rejectWithValue(error.code)
+  }
+})
+
 // =================== FireStore ===================
 
 export const writeDataToFirestore = createAsyncThunk(
