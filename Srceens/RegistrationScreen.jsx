@@ -10,9 +10,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
-  Pressable,
 } from "react-native";
-import { updateProfile} from "firebase/auth";
+import { updateProfile } from "firebase/auth";
 import * as ImagePicker from "expo-image-picker";
 import { AntDesign } from "@expo/vector-icons";
 import { Formik } from "formik";
@@ -20,19 +19,28 @@ import * as Yup from "yup";
 import { useNavigation } from "@react-navigation/native";
 import { registerDB } from "../redux/firebaseApi";
 import { useDispatch, useSelector } from "react-redux";
-import { selectIsLoggedIn } from "../redux/selectors";
+import { selectAuthError, selectIsLoggedIn } from "../redux/selectors";
 import { auth } from "../config";
-
+import Toast from "react-native-toast-message";
+import { clearError } from "../redux/authSlice";
 
 const RegistrationScreen = () => {
   const [photo, setPhoto] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
-const [login, setLogin] = useState();
+  const [login, setLogin] = useState();
+  const authError = useSelector(selectAuthError)
+
+  if (authError) {
+    Toast.show({
+      type: "error",
+      text1: "Такий email вже існує",
+      text2: "Спробуйте ввести інший email",
+    });
+  }
 
   const navigation = useNavigation();
-  const dispatch = useDispatch()
-  const isLoggedIn = useSelector(selectIsLoggedIn)
-
+  const dispatch = useDispatch();
+  const isLoggedIn = useSelector(selectIsLoggedIn);
 
   useEffect(() => {
     (async () => {
@@ -40,36 +48,36 @@ const [login, setLogin] = useState();
     })();
   }, []);
 
-  useEffect(()=> {
-    if(isLoggedIn){
-      (async ()=>{
-        await updateProfile (auth.currentUser, {
-          displayName: login
-        })
-      })()
+  useEffect(() => {
+    if (isLoggedIn) {
+      (async () => {
+        await updateProfile(auth.currentUser, {
+          displayName: login,
+        });
+      })();
       navigation.navigate("Home");
     }
-  },[isLoggedIn])
+  }, [isLoggedIn]);
 
   const pickImage = async () => {
     try {
-     let result = await ImagePicker.launchImageLibraryAsync({
-       mediaTypes: ImagePicker.MediaTypeOptions.All,
-       allowsEditing: true,
-       aspect: [4, 3],
-       quality: 1,
-     });
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-     if (!result.canceled) {
-      setPhoto(result.assets[0].uri);
-      const response = await fetch(result.assets[0].uri);
-      const file = await response.blob();
-      setPhotoFile(file)
-     }
+      if (!result.canceled) {
+        setPhoto(result.assets[0].uri);
+        const response = await fetch(result.assets[0].uri);
+        const file = await response.blob();
+        setPhotoFile(file);
+      }
     } catch (error) {
-     console.log(error)
+      console.log(error);
     }
-   };
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -84,34 +92,28 @@ const [login, setLogin] = useState();
         >
           <View style={styles.contentWrapper}>
             <View style={styles.avatar}>
-                <TouchableWithoutFeedback  onPress={pickImage}>
-                  <ImageBackground style={{flex:1}} source={{uri: photo }}  >
-                          <View style={styles.addIcon}>
-                            <AntDesign
-                              name="pluscircle"
-                              size={30}
-                              color="#FF6C00"
-                            />
-                          </View>
-                  </ImageBackground>
-                </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback onPress={pickImage}>
+                <ImageBackground style={{ flex: 1 }} source={{ uri: photo }}>
+                  <View style={styles.addIcon}>
+                    <AntDesign name="pluscircle" size={30} color="#FF6C00" />
+                  </View>
+                </ImageBackground>
+              </TouchableWithoutFeedback>
             </View>
             <Text style={styles.title}>Реєстрація</Text>
             <Formik
               initialValues={{ login: "", email: "", password: "" }}
               onSubmit={(values, action) => {
-                setLogin(values.login)
-                dispatch(registerDB({...values, photoFile}))
-                action.resetForm()
+                setLogin(values.login);
+                dispatch(registerDB({ ...values, photoFile }));
+                action.resetForm();
               }}
               validationSchema={Yup.object({
-                login: Yup.string()
-                  .required("Required"),
+                login: Yup.string().required("Required"),
                 email: Yup.string()
                   .email("Invalid email address")
                   .required("Required"),
-                password: Yup.string()
-                  .required("Required"),
+                password: Yup.string().required("Required"),
               })}
             >
               {({
@@ -137,7 +139,7 @@ const [login, setLogin] = useState();
                     onBlur={handleBlur("email")}
                     value={values.email}
                   />
-                  {errors.email && touched.email && 
+                  {errors.email && touched.email && (
                     <Text
                       style={{
                         color: "red",
@@ -147,7 +149,7 @@ const [login, setLogin] = useState();
                     >
                       {errors.email}
                     </Text>
-                  }
+                  )}
                   <TextInput
                     textContentType="password"
                     secureTextEntry
@@ -164,7 +166,10 @@ const [login, setLogin] = useState();
               )}
             </Formik>
             <TouchableWithoutFeedback
-              onPress={() => navigation.navigate("Login")}
+              onPress={() => {
+                dispatch(clearError())
+                navigation.navigate("Login")
+              }}
             >
               <Text style={styles.accExistText}> Вже є аккаунт? Увійти</Text>
             </TouchableWithoutFeedback>
@@ -213,7 +218,6 @@ const styles = StyleSheet.create({
     paddingTop: 96,
   },
   input: {
-    
     padding: 16,
     borderColor: "#E8E8E8",
     backgroundColor: "#f6f6f6",

@@ -15,20 +15,34 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { selectIsLoggedIn } from "../redux/selectors";
+import { selectAuthError, selectIsLoggedIn } from "../redux/selectors";
 import { loginDB } from "../redux/firebaseApi";
+import { clearError } from "../redux/authSlice";
+import Toast from "react-native-toast-message";
 
 
 const LoginScreen = () => {
       const navigation = useNavigation();
       const dispatch = useDispatch()
-      const isLoggedIn = useSelector(selectIsLoggedIn)
+  const isLoggedIn = useSelector(selectIsLoggedIn)
+    const authError = useSelector(selectAuthError);
+
+    if (authError) {
+      Toast.show({
+        type: "error",
+        text1: "Щось пішло не так",
+        text2: "Перевірте правильість пошти та пароля",
+      });
+    }
+  
       useEffect(()=> {
         if (isLoggedIn) {
           
           navigation.navigate("Home");
         }
-      },[isLoggedIn])
+      }, [isLoggedIn])
+  
+  
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -99,7 +113,10 @@ const LoginScreen = () => {
               )}
             </Formik>
             <TouchableWithoutFeedback
-              onPress={() => navigation.navigate("Registration")}
+              onPress={() => {
+                dispatch(clearError())
+                navigation.navigate("Registration")
+              }}
             >
               <Text style={styles.accExistText}>
                 Немає акаунту? Зареєструватися

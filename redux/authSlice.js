@@ -12,6 +12,11 @@ const slice = createSlice({
     error: "",
     isLoading: false,
   },
+  reducers: {
+    clearError: (state) => {
+      state.error = ''
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(registerDB.fulfilled, (state, { payload }) => {
@@ -41,3 +46,4 @@ const slice = createSlice({
 });
 
 export const userAuthReducer = slice.reducer;
+export const {clearError} = slice.actions
